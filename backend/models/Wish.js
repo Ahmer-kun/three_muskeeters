@@ -25,7 +25,6 @@ const wishSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Index for better query performance
 wishSchema.index({ date: -1 });
 
 export default mongoose.model('Wish', wishSchema);

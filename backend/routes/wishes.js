@@ -10,38 +10,54 @@ dotenv.config();
 
 const router = express.Router();
 
-// Generate random 6-digit code
 function generateLoginCode() {
   return Math.floor(100000 + Math.random() * 900000).toString();
 }
 
-// Simple email login - no password needed
-// Updated login route - NO PASSWORD CHECK
+// Initialize admin
+router.post('/admin/init', async (req, res) => {
+  try {
+    await Admin.deleteMany({});
+    
+    const admin = new Admin({
+      email: process.env.ADMIN_EMAIL,
+      password: 'temp-password',
+      loginCodes: []
+    });
+    
+    await admin.save();
+    
+    console.log('✅ Admin initialized');
+    res.json({ message: 'Admin ready for login' });
+  } catch (error) {
+    console.error('Init error:', error);
+    res.status(500).json({ error: 'Init failed' });
+  }
+});
+
+// Admin login
 router.post('/admin/login', async (req, res) => {
   try {
     const { email } = req.body;
     
     console.log('📧 Login request for:', email);
 
-    // Check if email matches admin email
     if (email !== process.env.ADMIN_EMAIL) {
       return res.status(401).json({ error: 'Access denied' });
     }
 
-    // Generate login code
     const loginCode = generateLoginCode();
-    const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+    const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
 
-    // Save or update admin
     let admin = await Admin.findOne({ email });
     if (!admin) {
       admin = new Admin({
         email: email,
+        password: 'temp-password',
         loginCodes: []
       });
     }
 
-    // Save code
     admin.loginCodes.push({ code: loginCode, expiresAt });
     await admin.save();
 
@@ -55,7 +71,6 @@ router.post('/admin/login', async (req, res) => {
         email: email
       });
     } else {
-      // Fallback - show code in console
       console.log('📧 LOGIN CODE:', loginCode);
       res.json({ 
         success: true,
@@ -69,20 +84,7 @@ router.post('/admin/login', async (req, res) => {
   }
 });
 
-
-  router.post('/admin/init', async (req, res) => {
-  try {
-    await Admin.deleteMany({});
-    console.log('✅ Admin initialized');
-    res.json({ message: 'Admin ready for login' });
-  } catch (error) {
-    console.error('Init error:', error);
-    res.status(500).json({ error: 'Init failed' });
-  }
-});
-
-
-// Verify code and login
+// Verify code
 router.post('/admin/verify-code', async (req, res) => {
   try {
     const { email, code } = req.body;
@@ -101,11 +103,9 @@ router.post('/admin/verify-code', async (req, res) => {
     );
 
     if (validCode) {
-      // Mark code as used
       validCode.used = true;
       await admin.save();
 
-      // Generate JWT token
       const token = jwt.sign(
         { email: admin.email },
         process.env.JWT_SECRET,
@@ -126,7 +126,7 @@ router.post('/admin/verify-code', async (req, res) => {
   }
 });
 
-// Other routes remain same...
+// Get wishes
 router.get('/', async (req, res) => {
   try {
     const wishes = await Wish.find().select('name message date').sort({ date: -1 }).limit(100);
@@ -136,6 +136,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Submit wish
 router.post('/', async (req, res) => {
   try {
     const { name, message } = req.body;
@@ -154,13 +155,14 @@ router.post('/', async (req, res) => {
       id: wish._id,
       name: wish.name,
       message: wish.message,
-      date: wish.date.toLocaleDateString()
+      date: wish.date
     });
   } catch (error) {
     res.status(500).json({ error: 'Server error' });
   }
 });
 
+// Delete wish
 router.delete('/:id', authenticateAdmin, async (req, res) => {
   try {
     const wish = await Wish.findByIdAndDelete(req.params.id);

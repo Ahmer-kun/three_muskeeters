@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-// const API_BASE_URL = 'https://your-backend-app.vercel.app/api';
-const API_BASE_URL = '/api';
+const API_BASE_URL = 'https://three-muskeeters.vercel.app/api';
+
 interface Wish {
   id: string;
   name: string;
@@ -16,7 +16,7 @@ const Guestbook: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  // Admin State - SIMPLIFIED
+  // Admin State
   const [isAdmin, setIsAdmin] = useState(false);
   const [showLogin, setShowLogin] = useState(false);
   const [adminEmail, setAdminEmail] = useState('');
@@ -41,6 +41,7 @@ const Guestbook: React.FC = () => {
       }
     } catch (err) {
       console.error('Error fetching wishes:', err);
+      // Fallback to localStorage
       const savedWishes = localStorage.getItem('birthday_wishes');
       if (savedWishes) setWishes(JSON.parse(savedWishes));
     }
@@ -50,7 +51,7 @@ const Guestbook: React.FC = () => {
     fetchWishes();
   }, []);
 
-  // Submit wish (same as before)
+  // Submit wish
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim() || !message.trim()) return;
@@ -93,7 +94,7 @@ const Guestbook: React.FC = () => {
     }
   };
 
-  // SIMPLIFIED ADMIN LOGIN
+  // Admin login handlers
   const handleSecretTrigger = () => {
     if (isAdmin) return;
     const newCount = secretTapCount + 1;
@@ -109,7 +110,6 @@ const Guestbook: React.FC = () => {
     
     try {
       if (loginStep === 'email') {
-        // Step 1: Request code
         const response = await fetch(`${API_BASE_URL}/wishes/admin/login`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -123,7 +123,6 @@ const Guestbook: React.FC = () => {
           alert("Access denied");
         }
       } else {
-        // Step 2: Verify code
         const response = await fetch(`${API_BASE_URL}/wishes/admin/verify-code`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -270,7 +269,7 @@ const Guestbook: React.FC = () => {
         </div>
       </div>
 
-      {/* SIMPLIFIED LOGIN MODAL */}
+      {/* Login Modal */}
       {showLogin && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
           <div className="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl">

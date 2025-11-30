@@ -1,51 +1,63 @@
 import { GoogleGenAI } from "@google/genai";
 
-// Ensure API key is available
-const apiKey = process.env.API_KEY || '';
+// API Key - Production ke liye environment variable se
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBnKU3_doDt4jviS_oVSMbKCwpyer88lTM';
 const ai = new GoogleGenAI({ apiKey });
 
-const MODEL_NAME = 'gemini-2.5-flash';
+const MODEL_NAME = 'gemini-2.0-flash'; // Updated model name
 
-// Fallback content in case API fails or key is missing during the party
+// Fallback content
 const FALLBACK_POEM = `
-Upon the seventeenth of cold December,
-A triple birthday we shall remember!
-For Maheen, Masaid, and Maaz are here,
-To bring us joy and holiday cheer.
-The cake is sweet, the candles glow,
-For the coolest cousins that we know.
-Happy Birthday to the legendary crew,
-May all your wishes and dreams come true!
-(Note: AI is taking a nap, but the love is real!)
+Roses are red, violets are blue,
+It's your birthday, and we're happy for you!
+Maheen, Masaid, and Maaz - what a crew,
+Here's a birthday wish, especially for you!
+
+May your day be filled with laughter and cheer,
+With cake and presents, and all you hold dear.
+Though the AI is taking a little break,
+The love in this message is not fake!
+
+Happy Birthday to the legendary three,
+From all of your family, with love and glee!
 `;
 
 const FALLBACK_FACTS = `
-*   **Wright Brothers Day:** On December 17, 1903, the Wright Brothers made their first successful flight!
-*   **The Simpsons:** The very first episode of The Simpsons aired on this day in 1989.
-*   **Saturnalia:** In ancient Rome, the festival of Saturnalia (the inspiration for many holiday traditions) began on Dec 17.
+* **1903:** Wright Brothers' first successful flight
+* **1989:** The Simpsons TV series premiered
+* **Birthstones:** Turquoise and Zircon
+* **Famous Birthdays:** Pope Francis, Milla Jovovich
 `;
 
 /**
- * Generates a personalized birthday poem based on user prompt.
+ * Generates a personalized birthday poem
  */
 export const generateBirthdayPoem = async (userPrompt: string): Promise<string> => {
+  console.log('🚀 AI Poet called with prompt:', userPrompt);
   console.log('🔑 API Key exists:', !!apiKey);
-  console.log('📝 User prompt:', userPrompt);
   
-  if (!apiKey) {
-    console.warn("❌ API Key missing, using fallback poem.");
+  // If no API key or prompt, return fallback
+  if (!apiKey || !userPrompt.trim()) {
+    console.warn('❌ No API key or prompt');
     return FALLBACK_POEM;
   }
 
   try {
-    console.log('🚀 Making API call to Gemini...');
+    console.log('📡 Calling Gemini API...');
     
     const finalPrompt = `
-      You are an expert poet for a birthday website.
-      The user wants you to write a poem based on the following request: "${userPrompt}".
+      You are a creative poet writing for a birthday celebration.
+      The user wants a poem based on: "${userPrompt}"
       
-      Context: The birthday celebration is for three cousins: Maheen, Masaid, and Maaz (born Dec 17).
-      Make it creative, rhythmically pleasing, and fun. Keep it under 200 words.
+      Context: This is for three cousins - Maheen, Masaid, and Maaz - celebrating their birthday on December 17th.
+      
+      Requirements:
+      - Make it fun, creative, and birthday-themed
+      - Keep it under 150 words
+      - Add some humor if appropriate
+      - Make it personal and engaging
+      
+      Write the poem now:
     `;
 
     const response = await ai.models.generateContent({
@@ -53,19 +65,20 @@ export const generateBirthdayPoem = async (userPrompt: string): Promise<string> 
       contents: finalPrompt,
     });
 
-    console.log('✅ API Response:', response);
-    console.log('📜 Generated poem:', response.text);
+    console.log('✅ AI Response received');
     
-    return response.text || FALLBACK_POEM;
+    // Safely extract text from response
+    const poemText = response.text || FALLBACK_POEM;
+    return poemText;
+
   } catch (error) {
     console.error("❌ Gemini API Error:", error);
     return FALLBACK_POEM;
   }
 };
 
-
 /**
- * Generates fun facts about December 17th.
+ * Generates fun facts about December 17th
  */
 export const getDayFacts = async (): Promise<string> => {
   if (!apiKey) {
@@ -75,11 +88,12 @@ export const getDayFacts = async (): Promise<string> => {
   try {
     const response = await ai.models.generateContent({
       model: MODEL_NAME,
-      contents: "Give me 3 short, fascinating historical or pop-culture facts about December 17th. Format them as a bulleted list.",
+      contents: "Give me 3-4 interesting historical or pop culture facts about December 17th. Keep them short and engaging. Format as bullet points.",
     });
+    
     return response.text || FALLBACK_FACTS;
   } catch (error) {
-    console.error("Gemini API Error (Facts):", error);
+    console.error("Gemini Facts Error:", error);
     return FALLBACK_FACTS;
   }
 };

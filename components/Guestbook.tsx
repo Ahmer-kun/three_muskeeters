@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
-
-const API_BASE_URL = 'https://three-muskeeters.vercel.app/api';
+const API_BASE_URL = '/api';
 
 interface Wish {
   id: string;

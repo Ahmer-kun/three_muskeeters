@@ -19,10 +19,11 @@ const adminSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Clean up expired codes every time we save
 adminSchema.pre('save', function(next) {
   const now = new Date();
-  this.loginCodes = this.loginCodes.filter(loginCode => loginCode.expiresAt > now);
+  this.loginCodes = this.loginCodes.filter(loginCode => 
+    loginCode.expiresAt > now && !loginCode.used
+  );
   next();
 });
 

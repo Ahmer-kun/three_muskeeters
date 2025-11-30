@@ -16,22 +16,10 @@ connectDB();
 // CORS Configuration - FIXED
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow all origins in production for now
-    const allowedOrigins = [
-      'https://three-muskeeters.vercel.app',
-      'https://three-muskeeters-*.vercel.app',
-      'https://three-muskeeters-*-muhammad-ahmers-projects-*.vercel.app',
-      'http://localhost:3000',
-      'http://localhost:5173'
-    ];
-    
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-    
-    if (allowedOrigins.some(allowed => origin.match(allowed))) {
+    // Allow all origins during development
+    if (!origin || origin.includes('vercel.app') || origin.includes('localhost')) {
       callback(null, true);
     } else {
-      console.log('🚫 CORS blocked origin:', origin);
       callback(new Error('Not allowed by CORS'));
     }
   },
@@ -62,15 +50,10 @@ app.get('/api/health', (req, res) => {
     status: 'OK', 
     database: 'Connected',
     timestamp: new Date().toISOString(),
-    allowedOrigins: [
-      'https://three-muskeeters.vercel.app',
-      'https://three-muskeeters-*.vercel.app',
-      'http://localhost:3000'
-    ]
+    allowedOrigins: ['*.vercel.app', 'localhost']
   });
 });
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`🌐 CORS enabled for all Vercel domains`);
 });

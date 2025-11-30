@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 
-const API_BASE_URL = 'https://your-backend-app.vercel.app/api';
-
+// const API_BASE_URL = 'https://your-backend-app.vercel.app/api';
+const API_BASE_URL = '/api';
 interface Wish {
   id: string;
   name: string;

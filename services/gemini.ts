@@ -1,85 +1,55 @@
 import { GoogleGenAI } from "@google/genai";
 
-// API Key - Production ke liye environment variable se
-const apiKey = import.meta.env.VITE_GEMINI_API_KEY || 'AIzaSyBnKU3_doDt4jviS_oVSMbKCwpyer88lTM';
+// Use environment variable
+const apiKey = import.meta.env.VITE_GEMINI_API_KEY || '';
 const ai = new GoogleGenAI({ apiKey });
 
-const MODEL_NAME = 'gemini-2.0-flash'; // Updated model name
-
-// Fallback content
 const FALLBACK_POEM = `
-Roses are red, violets are blue,
-It's your birthday, and we're happy for you!
-Maheen, Masaid, and Maaz - what a crew,
-Here's a birthday wish, especially for you!
+🎉 Happy Birthday to the amazing trio! 🎉
+
+Maheen, Masaid, and Maaz - three stars so bright,
+Born on December 17th, shining with light!
+Through all the seasons, through thick and thin,
+A bond of cousins that will always win!
 
 May your day be filled with laughter and cheer,
-With cake and presents, and all you hold dear.
-Though the AI is taking a little break,
-The love in this message is not fake!
+With cake and presents, and all you hold dear!
+This birthday wish comes straight from the heart,
+For an awesome new year and a fresh new start!
 
-Happy Birthday to the legendary three,
-From all of your family, with love and glee!
+✨ (AI is taking a break, but the love is real!) ✨
 `;
 
 const FALLBACK_FACTS = `
-* **1903:** Wright Brothers' first successful flight
-* **1989:** The Simpsons TV series premiered
-* **Birthstones:** Turquoise and Zircon
-* **Famous Birthdays:** Pope Francis, Milla Jovovich
+📅 **December 17th Fun Facts:**
+
+• **1903:** Wright Brothers' first successful flight!
+• **1989:** The Simpsons TV series premiered
+• **Festive Season:** Perfect time for birthday celebrations
+• **Winter Magic:** Snow, holidays, and triple the cake!
 `;
 
-/**
- * Generates a personalized birthday poem
- */
 export const generateBirthdayPoem = async (userPrompt: string): Promise<string> => {
-  console.log('🚀 AI Poet called with prompt:', userPrompt);
-  console.log('🔑 API Key exists:', !!apiKey);
+  console.log('🎯 AI Poet called with prompt:', userPrompt);
   
   // If no API key or prompt, return fallback
   if (!apiKey || !userPrompt.trim()) {
-    console.warn('❌ No API key or prompt');
     return FALLBACK_POEM;
   }
 
   try {
-    console.log('📡 Calling Gemini API...');
-    
-    const finalPrompt = `
-      You are a creative poet writing for a birthday celebration.
-      The user wants a poem based on: "${userPrompt}"
-      
-      Context: This is for three cousins - Maheen, Masaid, and Maaz - celebrating their birthday on December 17th.
-      
-      Requirements:
-      - Make it fun, creative, and birthday-themed
-      - Keep it under 150 words
-      - Add some humor if appropriate
-      - Make it personal and engaging
-      
-      Write the poem now:
-    `;
-
     const response = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: finalPrompt,
+      model: 'gemini-2.0-flash',
+      contents: `Create a fun, creative birthday poem based on this request: "${userPrompt}". Keep it under 150 words.`
     });
 
-    console.log('✅ AI Response received');
-    
-    // Safely extract text from response
-    const poemText = response.text || FALLBACK_POEM;
-    return poemText;
-
+    return response.text || FALLBACK_POEM;
   } catch (error) {
     console.error("❌ Gemini API Error:", error);
     return FALLBACK_POEM;
   }
 };
 
-/**
- * Generates fun facts about December 17th
- */
 export const getDayFacts = async (): Promise<string> => {
   if (!apiKey) {
     return FALLBACK_FACTS;
@@ -87,8 +57,8 @@ export const getDayFacts = async (): Promise<string> => {
 
   try {
     const response = await ai.models.generateContent({
-      model: MODEL_NAME,
-      contents: "Give me 3-4 interesting historical or pop culture facts about December 17th. Keep them short and engaging. Format as bullet points.",
+      model: 'gemini-2.0-flash',
+      contents: "Give me 3 interesting facts about December 17th in short bullet points."
     });
     
     return response.text || FALLBACK_FACTS;

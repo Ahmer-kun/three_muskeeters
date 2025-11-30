@@ -1,0 +1,1848 @@
+----------structure--------------
+
++----my-birthday-site
+|
+|---/components
+|	AIWisher.tsx
+|	DailyTrivia.tsx
+|	Facts.tsx
+|	Gallery.tsx
+|	GuestBook.tsx
+|	Hero.tsx
+|	LockScreen.tsx
+|	MainStage.tsx
+|	PoeticEngine.tsx
+|	WelcomeScreen.tsx
+|
+|---/node_modules
+|
+|
+|
+|---/public
+|	vite.svg
+|
+|
+|---/services
+|	gemini.ts
+|
+|
+|---/src
+|--assets
+|	react.svg
+|
+|
+|
+|---/utils
+|	ai-integration.ts
+|
+|
+|
+|.env.local
+|.gitignore
+|App.tsx
+|eslint.config.js
+|index.html
+|index.tsx
+|metadata.json
+|package-lock.json
+|package.json
+|tsconfig.app.json
+|tsconfig.json
+|tsconfig.node.json	
+|types.ts
+|vite.config.ts
+
+==============
+AIWisher.tsx
+-------------
+import React, { useState } from 'react';
+import { generateBirthdayPoem } from '../services/gemini';
+
+const AIWisher: React.FC = () => {
+  const [prompt, setPrompt] = useState('');
+  const [result, setResult] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setLoading(true);
+    const poem = await generateBirthdayPoem(prompt);
+    setResult(poem);
+    setLoading(false);
+  };
+
+  return (
+    <section className="py-20 px-4 bg-white">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-serif font-bold text-indigo-900 mb-4">AI Poet</h2>
+          <p className="text-slate-600 max-w-xl mx-auto">
+            You have full creative control! Describe the poem you want (e.g., "A funny limerick about Maaz losing his cake") and watch the magic happen.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12 items-start">
+          {/* Controls */}
+          <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200 shadow-lg">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Your Prompt</label>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition h-48 resize-none text-slate-700 placeholder:text-slate-400"
+                  placeholder="e.g., Write a rap battle style poem between Maheen and Masaid about who is the favorite cousin..."
+                />
+              </div>
+
+              <button
+                onClick={handleGenerate}
+                disabled={loading || !prompt.trim()}
+                className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] ${
+                  loading || !prompt.trim()
+                    ? 'bg-slate-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700'
+                }`}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Composing...
+                  </span>
+                ) : (
+                  "Generate Poem 📜"
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Output */}
+          <div className="bg-indigo-900 p-8 rounded-2xl shadow-2xl text-white h-full flex flex-col justify-center relative overflow-hidden min-h-[400px]">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-pink-500 opacity-10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+            
+            <h3 className="text-xl font-serif text-pink-300 mb-6 relative z-10">The Masterpiece</h3>
+            
+            {result ? (
+              <div className="prose prose-invert prose-lg relative z-10 overflow-y-auto max-h-[500px] custom-scrollbar pr-2">
+                <p className="whitespace-pre-line leading-relaxed italic font-serif text-xl md:text-2xl">
+                  "{result}"
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-indigo-300 opacity-60 relative z-10">
+                <span className="text-6xl mb-4">✨</span>
+                <p className="text-center">Enter a prompt on the left to start the AI poet.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default AIWisher;
+
+===============
+DailyTrivia.tsx
+---------------
+import React, { useEffect, useState } from 'react';
+import { getDayFacts } from '../utils/ai-integration';
+
+const DailyTrivia: React.FC = () => {
+  const [facts, setFacts] = useState<string>('');
+
+  useEffect(() => {
+    let mounted = true;
+    getDayFacts().then((text) => {
+      if (mounted) setFacts(text);
+    });
+    return () => { mounted = false; };
+  }, []);
+
+  return (
+    <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+
+      <div className="max-w-4xl mx-auto px-4 relative z-10">
+        <div className="flex flex-col md:flex-row items-center gap-12">
+          <div className="md:w-1/2">
+             <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-purple-400">
+               The Trio of Dec 17th
+             </h2>
+             <div className="space-y-4 text-lg text-slate-300 leading-relaxed">
+               <p>
+                 You three share a birthday with Pope Francis, Milla Jovovich, and Sarah Paulson!
+               </p>
+               <p>
+                 <strong className="text-white">Winter Royalty:</strong> ❄️ <br/>
+                 Born in the most magical month of the year. That means festive vibes, cozy celebrations, and triple the cake.
+               </p>
+               <p>
+                 <strong className="text-white">Fun Fact:</strong> ✈️ <br/>
+                 December 17 is also Wright Brothers Day, marking the first successful flight in 1903. You guys are in legendary company!
+               </p>
+             </div>
+          </div>
+
+          <div className="md:w-1/2 bg-white/5 backdrop-blur-lg border border-white/10 p-8 rounded-3xl">
+            <h3 className="text-xl font-bold text-indigo-300 mb-4">Historical Fun Facts</h3>
+            {facts ? (
+              <div className="prose prose-invert">
+                 <div className="whitespace-pre-line">{facts}</div>
+              </div>
+            ) : (
+              <div className="animate-pulse flex space-x-4">
+                <div className="flex-1 space-y-4 py-1">
+                  <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-slate-700 rounded"></div>
+                  <div className="h-4 bg-slate-700 rounded w-5/6"></div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default DailyTrivia;
+
+===============
+Facts.tsx
+---------------
+import React, { useEffect, useState } from 'react';
+import { getDayFacts } from '../services/gemini';
+
+const Facts: React.FC = () => {
+  const [facts, setFacts] = useState<string>('');
+
+  useEffect(() => {
+    let mounted = true;
+    getDayFacts().then((text) => {
+      if (mounted) setFacts(text);
+    });
+    return () => { mounted = false; };
+  }, []);
+
+  return (
+    <section className="py-20 bg-slate-900 text-white relative overflow-hidden">
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(#4f46e5 1px, transparent 1px)', backgroundSize: '30px 30px' }}></div>
+
+      <div className="max-w-4xl mx-auto px-4 relative z-10">
+        <div className="flex flex-col md:flex-row items-center gap-12">
+          <div className="md:w-1/2">
+             <h2 className="text-4xl md:text-5xl font-serif font-bold mb-6 bg-clip-text text-transparent bg-gradient-to-r from-pink-400 to-purple-400">
+               The Trio of Dec 17th
+             </h2>
+             <div className="space-y-4 text-lg text-slate-300 leading-relaxed">
+               <p>
+                 You three share a birthday with Pope Francis, Milla Jovovich, and Sarah Paulson!
+               </p>
+               <p>
+                 <strong className="text-white">Winter Royalty:</strong> ❄️ <br/>
+                 Born in the most magical month of the year. That means festive vibes, cozy celebrations, and triple the cake.
+               </p>
+               <p>
+                 <strong className="text-white">Fun Fact:</strong> ✈️ <br/>
+                 December 17 is also Wright Brothers Day, marking the first successful flight in 1903. You guys are in legendary company!
+               </p>
+             </div>
+          </div>
+
+          <div className="md:w-1/2 bg-white/5 backdrop-blur-lg border border-white/10 p-8 rounded-3xl">
+            <h3 className="text-xl font-bold text-indigo-300 mb-4">Historical Fun Facts</h3>
+            {facts ? (
+              <div className="prose prose-invert">
+                 <div className="whitespace-pre-line">{facts}</div>
+              </div>
+            ) : (
+              <div className="animate-pulse flex space-x-4">
+                <div className="flex-1 space-y-4 py-1">
+                  <div className="h-4 bg-slate-700 rounded w-3/4"></div>
+                  <div className="h-4 bg-slate-700 rounded"></div>
+                  <div className="h-4 bg-slate-700 rounded w-5/6"></div>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Facts;
+===============
+Gallery.tsx
+---------------
+import React from 'react';
+
+const Gallery: React.FC = () => {
+  // Using picsum with seeds to get consistent random images
+  const images = [
+    "https://picsum.photos/seed/maheen/600/800",
+    "https://picsum.photos/seed/masaid/800/600",
+    "https://picsum.photos/seed/maaz/600/600",
+    "https://picsum.photos/seed/cousins/600/800",
+    "https://picsum.photos/seed/fun/800/600",
+    "https://picsum.photos/seed/party/600/600",
+  ];
+
+  return (
+    <section className="py-24 bg-slate-50" id="gallery">
+      <div className="max-w-6xl mx-auto px-4">
+        <div className="text-center mb-16">
+          <span className="text-indigo-600 font-bold tracking-wider uppercase text-sm">Memories</span>
+          <h2 className="text-4xl md:text-5xl font-serif font-bold text-slate-900 mt-2">The Cousins' Hall of Fame</h2>
+        </div>
+
+        <div className="columns-1 md:columns-2 lg:columns-3 gap-6 space-y-6">
+          {images.map((src, index) => (
+            <div key={index} className="break-inside-avoid group relative overflow-hidden rounded-2xl shadow-lg cursor-pointer">
+              <img 
+                src={src} 
+                alt={`Memory ${index + 1}`} 
+                className="w-full h-auto transform transition-transform duration-500 group-hover:scale-110"
+                loading="lazy"
+              />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-6">
+                <p className="text-white font-medium">Epic Moment #{index + 1}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default Gallery;
+===============
+GuestBook.tsx
+---------------
+import React, { useState, useEffect } from 'react';
+
+// ==========================================
+// 🔐 ADMIN CONFIGURATION (SECURE MODE)
+// Credentials are now obfuscated (Base64) to prevent Ctrl+F snooping.
+// ==========================================
+// Decodes to: muhammadahmar032@gmail.com
+const ADMIN_EMAIL_HASH = 'bXVoYW1tYWRhaG1hcjAzMkBnbWFpbC5jb20=';
+// Decodes to: sk4gphtmgGG
+const ADMIN_PASS_HASH = 'c2s0Z3BodG1nR0c=';
+
+interface Wish {
+  id: number;
+  name: string;
+  message: string;
+  date: string;
+}
+
+const Guestbook: React.FC = () => {
+  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [name, setName] = useState('');
+  const [message, setMessage] = useState('');
+
+  // Admin State
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [showLogin, setShowLogin] = useState(false);
+  const [adminEmail, setAdminEmail] = useState('');
+  const [adminPass, setAdminPass] = useState('');
+  const [secretTapCount, setSecretTapCount] = useState(0);
+
+  // Load wishes from local storage on mount
+  useEffect(() => {
+    const savedWishes = localStorage.getItem('birthday_wishes');
+    if (savedWishes) {
+      setWishes(JSON.parse(savedWishes));
+    } else {
+      // Seed data if empty
+      const seeds = [
+        { id: 1, name: "Ahmer", message: "Can't wait to celebrate! Happy Birthday guys!", date: new Date().toLocaleDateString() },
+        { id: 2, name: "Anonymous Fan", message: "Best cousins ever. Have a blast!", date: new Date().toLocaleDateString() }
+      ];
+      setWishes(seeds);
+      localStorage.setItem('birthday_wishes', JSON.stringify(seeds));
+    }
+  }, []);
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!name.trim() || !message.trim()) return;
+
+    const newWish: Wish = {
+      id: Date.now(),
+      name: name.trim(),
+      message: message.trim(),
+      date: new Date().toLocaleDateString(),
+    };
+
+    const updatedWishes = [newWish, ...wishes];
+    setWishes(updatedWishes);
+    localStorage.setItem('birthday_wishes', JSON.stringify(updatedWishes));
+    
+    setName('');
+    setMessage('');
+  };
+
+  // --- Admin Functions ---
+
+  const handleSecretTrigger = () => {
+    if (isAdmin) return;
+    const newCount = secretTapCount + 1;
+    setSecretTapCount(newCount);
+    
+    if (newCount === 5) {
+      setShowLogin(true);
+      setSecretTapCount(0);
+    }
+  };
+
+  const handleAdminLogin = (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    // Encode input to Base64 to compare with stored hashes
+    // btoa() creates a Base64 string from a "string" of binary data.
+    try {
+      const emailHash = btoa(adminEmail.trim());
+      const passHash = btoa(adminPass);
+
+      if (emailHash === ADMIN_EMAIL_HASH && passHash === ADMIN_PASS_HASH) {
+        setIsAdmin(true);
+        setShowLogin(false);
+        setAdminPass('');
+        setAdminEmail('');
+      } else {
+        alert("Access Denied. Invalid Credentials.");
+      }
+    } catch (err) {
+      console.error("Login Error");
+      alert("Access Denied.");
+    }
+  };
+
+  const handleDelete = (idToDelete: number) => {
+    if (!window.confirm("Are you sure you want to delete this wish?")) return;
+    
+    const updatedWishes = wishes.filter(w => w.id !== idToDelete);
+    setWishes(updatedWishes);
+    localStorage.setItem('birthday_wishes', JSON.stringify(updatedWishes));
+  };
+
+  return (
+    <section className="py-20 bg-slate-100 relative">
+      <div className="max-w-4xl mx-auto px-4">
+        <div className="text-center mb-12 select-none">
+          <h2 
+            onClick={handleSecretTrigger}
+            className="text-4xl font-serif font-bold text-slate-900 mb-4 cursor-default active:scale-95 transition-transform"
+            title={isAdmin ? "Admin Active" : "Sign the book!"}
+          >
+            The Guestbook
+          </h2>
+
+          {isAdmin && (
+            <div className="mb-6 flex justify-center items-center gap-3 animate-fade-in">
+              <span className="text-xs text-red-600 bg-red-100 px-3 py-1 rounded-full font-bold uppercase tracking-wider">
+                Admin Mode Active
+              </span>
+              <button 
+                onClick={() => setIsAdmin(false)}
+                className="text-xs text-slate-500 hover:text-red-600 underline font-medium"
+              >
+                Logout
+              </button>
+            </div>
+          )}
+
+          <p className="text-slate-600">Leave a birthday wish for the trio!</p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12">
+          {/* Form */}
+          <div className="bg-white p-8 rounded-2xl shadow-xl h-fit">
+            <h3 className="text-xl font-bold mb-6 text-indigo-900">Sign the Book ✍️</h3>
+            <form onSubmit={handleSubmit} className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Your Name</label>
+                <input
+                  type="text"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none"
+                  placeholder="e.g. Auntie Sarah"
+                  maxLength={30}
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-slate-700 mb-1">Your Message</label>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  className="w-full px-4 py-2 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 outline-none h-32 resize-none"
+                  placeholder="Write your birthday wish here..."
+                  maxLength={200}
+                />
+              </div>
+              <button
+                type="submit"
+                disabled={!name.trim() || !message.trim()}
+                className="w-full py-3 bg-indigo-600 text-white font-bold rounded-lg hover:bg-indigo-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                Send Wish
+              </button>
+            </form>
+          </div>
+
+          {/* List */}
+          <div className="space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar pr-2">
+            {wishes.map((wish) => (
+              <div key={wish.id} className="bg-white p-6 rounded-xl shadow-sm border border-slate-200 relative group">
+                <div className="absolute -left-2 top-6 w-4 h-4 bg-yellow-400 rounded-full border-2 border-white"></div>
+                
+                {/* Delete Button (Only visible to Admin) */}
+                {isAdmin && (
+                  <button 
+                    onClick={() => handleDelete(wish.id)}
+                    className="absolute top-2 right-2 p-2 bg-red-100 text-red-600 rounded-full hover:bg-red-200 transition-colors z-10"
+                    title="Delete this wish"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
+                )}
+
+                <p className="text-slate-800 text-lg mb-3 italic break-words">"{wish.message}"</p>
+                <div className="flex justify-between items-center text-sm text-slate-500 font-medium">
+                  <span className="text-indigo-600">— {wish.name}</span>
+                  <span>{wish.date}</span>
+                </div>
+              </div>
+            ))}
+            {wishes.length === 0 && (
+              <div className="text-center text-slate-400 italic py-10">
+                Be the first to leave a wish!
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Admin Login Modal */}
+      {showLogin && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-xl p-8 max-w-sm w-full shadow-2xl animate-fade-in">
+            <h3 className="text-xl font-bold mb-4 text-slate-900">Admin Access</h3>
+            <p className="text-sm text-slate-500 mb-4">Enter credentials to manage guestbook.</p>
+            <form onSubmit={handleAdminLogin} className="space-y-4">
+              <input
+                type="email"
+                autoFocus
+                value={adminEmail}
+                onChange={(e) => setAdminEmail(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                placeholder="Email Address"
+              />
+              <input
+                type="password"
+                value={adminPass}
+                onChange={(e) => setAdminPass(e.target.value)}
+                className="w-full px-4 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-indigo-500 outline-none"
+                placeholder="Passcode"
+              />
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  onClick={() => setShowLogin(false)}
+                  className="flex-1 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="flex-1 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 transition"
+                >
+                  Login
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+    </section>
+  );
+};
+
+export default Guestbook;
+===============
+Hero.tsx
+---------------
+import React, { useEffect, useState } from 'react';
+
+const Hero: React.FC = () => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isBirthdayToday, setIsBirthdayToday] = useState(false);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      let birthday = new Date(currentYear, 11, 17); // Month is 0-indexed (11 = Dec)
+
+      // Check if it's the birthday right now
+      if (now.getMonth() === 11 && now.getDate() === 17) {
+        setIsBirthdayToday(true);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      } else {
+        setIsBirthdayToday(false);
+      }
+
+      // If birthday has passed this year, target next year
+      if (now > birthday) {
+        birthday = new Date(currentYear + 1, 11, 17);
+      }
+
+      const difference = birthday.getTime() - now.getTime();
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        });
+      }
+    };
+
+    const timer = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft();
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 text-white">
+      {/* Abstract Background Shapes */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float"></div>
+      <div className="absolute top-0 right-0 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute -bottom-8 left-20 w-56 h-56 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: '4s' }}></div>
+
+      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        <h2 className="text-xl md:text-2xl font-light tracking-[0.3em] uppercase mb-4 text-pink-200">
+          December 17th
+        </h2>
+        
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold mb-6 leading-tight drop-shadow-lg">
+          {isBirthdayToday ? "Happy Birthday!" : "Maheen, Masaid & Maaz"}
+        </h1>
+
+        <p className="text-lg md:text-2xl text-indigo-100 mb-12 max-w-2xl mx-auto leading-relaxed">
+          Celebrating the coolest cousins in the galaxy. The ultimate December squad.
+        </p>
+
+        {!isBirthdayToday && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl">
+            <TimeUnit value={timeLeft.days} label="Days" />
+            <TimeUnit value={timeLeft.hours} label="Hours" />
+            <TimeUnit value={timeLeft.minutes} label="Mins" />
+            <TimeUnit value={timeLeft.seconds} label="Secs" />
+          </div>
+        )}
+
+        {isBirthdayToday && (
+          <div className="animate-bounce-slow mt-8">
+             <div className="text-2xl md:text-4xl font-light text-indigo-100 mb-4">Maheen, Masaid & Maaz</div>
+             <span className="text-6xl">🎂 🎉 🎁</span>
+          </div>
+        )}
+      </div>
+      
+      <div className="absolute bottom-10 left-0 right-0 text-center animate-bounce">
+        <span className="text-white/50 text-sm uppercase tracking-widest">Scroll to Party</span>
+      </div>
+    </section>
+  );
+};
+
+const TimeUnit: React.FC<{ value: number; label: string }> = ({ value, label }) => (
+  <div className="flex flex-col items-center">
+    <span className="text-4xl md:text-6xl font-bold tabular-nums font-sans">{String(value).padStart(2, '0')}</span>
+    <span className="text-xs md:text-sm uppercase tracking-wider text-indigo-200 mt-2">{label}</span>
+  </div>
+);
+
+export default Hero;
+===============
+LockScreen.tsx
+---------------
+import React, { useEffect, useState } from 'react';
+
+interface LockScreenProps {
+  onEnter: () => void;
+}
+
+const LockScreen: React.FC<LockScreenProps> = ({ onEnter }) => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isLocked, setIsLocked] = useState(true);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      let targetDate = new Date(currentYear, 11, 17); // Dec 17 (Month is 0-indexed)
+
+      // If it IS Dec 17, we want to unlock.
+      if (now.getMonth() === 11 && now.getDate() === 17) {
+        setIsLocked(false);
+        return;
+      }
+
+      // If we are past the date, target next year
+      if (now > targetDate) {
+        targetDate = new Date(currentYear + 1, 11, 17);
+      }
+
+      const difference = targetDate.getTime() - now.getTime();
+
+      if (difference <= 0) {
+        setIsLocked(false);
+      } else {
+        // IMPORTANT FIX: Removed "setIsLocked(true)" here.
+        // This prevents the timer from re-locking the screen if you clicked the Dev button.
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        });
+      }
+    };
+
+    const timer = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft(); // Initial call
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center text-white px-4 text-center overflow-hidden">
+      
+      {/* DEV UNLOCK BUTTON */}
+      {/* Increased opacity to text-white/50 so you can see it easily */}
+      <button 
+        onClick={() => setIsLocked(false)} 
+        className="absolute top-4 right-4 text-xs text-white/50 hover:text-white transition-colors uppercase tracking-widest z-50 border border-white/20 px-3 py-1 rounded-full"
+      >
+        Dev Unlock
+      </button>
+
+      {/* Ambient Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-900/30 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="relative z-10 max-w-3xl mx-auto space-y-8">
+        <div className="animate-float">
+          <span className="text-6xl md:text-8xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+            {isLocked ? '🔒' : '🎂'}
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-indigo-300 font-medium tracking-[0.3em] uppercase text-sm md:text-base animate-bounce-slow">
+            {isLocked ? "Countdown to Chaos" : "It's Time!"}
+          </p>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-400 leading-tight">
+            Dec 17th
+          </h1>
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
+          <p className="text-lg md:text-xl text-slate-400 font-light">
+            Maheen &nbsp;|&nbsp; Masaid &nbsp;|&nbsp; Maaz
+          </p>
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
+        </div>
+
+        {isLocked ? (
+          <div className="mt-12 p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+            <div className="grid grid-cols-4 gap-4 md:gap-8 text-center">
+              <TimeBox value={timeLeft.days} label="Days" />
+              <TimeBox value={timeLeft.hours} label="Hrs" />
+              <TimeBox value={timeLeft.minutes} label="Mins" />
+              <TimeBox value={timeLeft.seconds} label="Secs" />
+            </div>
+            <p className="mt-6 text-slate-400 text-sm">The digital gates open on December 17th</p>
+          </div>
+        ) : (
+          <button
+            onClick={onEnter}
+            className="mt-8 group relative inline-flex items-center justify-center px-10 py-4 font-serif text-xl font-bold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full overflow-hidden hover:scale-105 hover:shadow-[0_0_40px_rgba(79,70,229,0.4)] active:scale-95 focus:outline-none"
+          >
+            <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+            <span className="relative flex items-center gap-3">
+              Enter Party Mode
+              <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </span>
+          </button>
+        )}
+      </div>
+
+      {isLocked && (
+        <div className="absolute bottom-8 text-slate-600 text-xs tracking-widest uppercase">
+          Restricted Access: Come back later
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TimeBox: React.FC<{ value: number; label: string }> = ({ value, label }) => (
+  <div className="flex flex-col items-center">
+    <div className="text-3xl md:text-5xl font-bold font-sans tabular-nums text-white">
+      {String(value).padStart(2, '0')}
+    </div>
+    <div className="text-[10px] md:text-xs uppercase tracking-wider text-indigo-300 mt-1">
+      {label}
+    </div>
+  </div>
+);
+
+export default LockScreen;
+===============
+MainStage.tsx
+---------------
+import React, { useEffect, useState } from 'react';
+
+const MainStage: React.FC = () => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isBirthdayToday, setIsBirthdayToday] = useState(false);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      let birthday = new Date(currentYear, 11, 17); // Month is 0-indexed (11 = Dec)
+
+      // Check if it's the birthday right now
+      if (now.getMonth() === 11 && now.getDate() === 17) {
+        setIsBirthdayToday(true);
+        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+        return;
+      } else {
+        setIsBirthdayToday(false);
+      }
+
+      // If birthday has passed this year, target next year
+      if (now > birthday) {
+        birthday = new Date(currentYear + 1, 11, 17);
+      }
+
+      const difference = birthday.getTime() - now.getTime();
+
+      if (difference > 0) {
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        });
+      }
+    };
+
+    const timer = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft();
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <section className="relative min-h-screen flex items-center justify-center overflow-hidden bg-gradient-to-br from-indigo-900 via-purple-800 to-pink-700 text-white">
+      {/* Abstract Background Shapes */}
+      <div className="absolute top-10 left-10 w-32 h-32 bg-pink-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float"></div>
+      <div className="absolute top-0 right-0 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: '2s' }}></div>
+      <div className="absolute -bottom-8 left-20 w-56 h-56 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-float" style={{ animationDelay: '4s' }}></div>
+
+      <div className="relative z-10 text-center px-4 max-w-4xl mx-auto">
+        <h2 className="text-xl md:text-2xl font-light tracking-[0.3em] uppercase mb-4 text-pink-200">
+          December 17th
+        </h2>
+        
+        <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold mb-6 leading-tight drop-shadow-lg">
+          {isBirthdayToday ? "Happy Birthday!" : "Maheen, Masaid & Maaz"}
+        </h1>
+
+        <p className="text-lg md:text-2xl text-indigo-100 mb-12 max-w-2xl mx-auto leading-relaxed">
+          Celebrating the coolest cousins in the galaxy. The ultimate December squad.
+        </p>
+
+        {!isBirthdayToday && (
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-4 md:gap-8 text-center bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl">
+            <TimeUnit value={timeLeft.days} label="Days" />
+            <TimeUnit value={timeLeft.hours} label="Hours" />
+            <TimeUnit value={timeLeft.minutes} label="Mins" />
+            <TimeUnit value={timeLeft.seconds} label="Secs" />
+          </div>
+        )}
+
+        {isBirthdayToday && (
+          <div className="animate-bounce-slow mt-8">
+             <div className="text-2xl md:text-4xl font-light text-indigo-100 mb-4">Maheen, Masaid & Maaz</div>
+             <span className="text-6xl">🎂 🎉 🎁</span>
+          </div>
+        )}
+      </div>
+      
+      <div className="absolute bottom-10 left-0 right-0 text-center animate-bounce">
+        <span className="text-white/50 text-sm uppercase tracking-widest">Scroll to Party</span>
+      </div>
+    </section>
+  );
+};
+
+const TimeUnit: React.FC<{ value: number; label: string }> = ({ value, label }) => (
+  <div className="flex flex-col items-center">
+    <span className="text-4xl md:text-6xl font-bold tabular-nums font-sans">{String(value).padStart(2, '0')}</span>
+    <span className="text-xs md:text-sm uppercase tracking-wider text-indigo-200 mt-2">{label}</span>
+  </div>
+);
+
+export default MainStage;
+===============
+PoeticEngine.tsx
+---------------
+import React, { useState } from 'react';
+import { generateBirthdayPoem } from '../utils/ai-integration';
+
+const PoeticEngine: React.FC = () => {
+  const [prompt, setPrompt] = useState('');
+  const [result, setResult] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const handleGenerate = async () => {
+    if (!prompt.trim()) return;
+    setLoading(true);
+    const poem = await generateBirthdayPoem(prompt);
+    setResult(poem);
+    setLoading(false);
+  };
+
+  return (
+    <section className="py-20 px-4 bg-white">
+      <div className="max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl font-serif font-bold text-indigo-900 mb-4">AI Poet</h2>
+          <p className="text-slate-600 max-w-xl mx-auto">
+            You have full creative control! Describe the poem you want (e.g., "A funny limerick about Maaz losing his cake") and watch the magic happen.
+          </p>
+        </div>
+
+        <div className="grid md:grid-cols-2 gap-12 items-start">
+          {/* Controls */}
+          <div className="bg-slate-50 p-8 rounded-2xl border border-slate-200 shadow-lg">
+            <div className="space-y-6">
+              <div>
+                <label className="block text-sm font-semibold text-slate-700 mb-2">Your Prompt</label>
+                <textarea
+                  value={prompt}
+                  onChange={(e) => setPrompt(e.target.value)}
+                  className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 outline-none transition h-48 resize-none text-slate-700 placeholder:text-slate-400"
+                  placeholder="e.g., Write a rap battle style poem between Maheen and Masaid about who is the favorite cousin..."
+                />
+              </div>
+
+              <button
+                onClick={handleGenerate}
+                disabled={loading || !prompt.trim()}
+                className={`w-full py-4 rounded-xl font-bold text-lg text-white shadow-xl transition-all transform hover:scale-[1.02] active:scale-[0.98] ${
+                  loading || !prompt.trim()
+                    ? 'bg-slate-400 cursor-not-allowed'
+                    : 'bg-gradient-to-r from-pink-500 to-indigo-600 hover:from-pink-600 hover:to-indigo-700'
+                }`}
+              >
+                {loading ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Composing...
+                  </span>
+                ) : (
+                  "Generate Poem 📜"
+                )}
+              </button>
+            </div>
+          </div>
+
+          {/* Output */}
+          <div className="bg-indigo-900 p-8 rounded-2xl shadow-2xl text-white h-full flex flex-col justify-center relative overflow-hidden min-h-[400px]">
+            <div className="absolute top-0 right-0 w-40 h-40 bg-white opacity-5 rounded-full blur-3xl -translate-y-1/2 translate-x-1/2"></div>
+            <div className="absolute bottom-0 left-0 w-40 h-40 bg-pink-500 opacity-10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/2"></div>
+            
+            <h3 className="text-xl font-serif text-pink-300 mb-6 relative z-10">The Masterpiece</h3>
+            
+            {result ? (
+              <div className="prose prose-invert prose-lg relative z-10 overflow-y-auto max-h-[500px] custom-scrollbar pr-2">
+                <p className="whitespace-pre-line leading-relaxed italic font-serif text-xl md:text-2xl">
+                  "{result}"
+                </p>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center h-full text-indigo-300 opacity-60 relative z-10">
+                <span className="text-6xl mb-4">✨</span>
+                <p className="text-center">Enter a prompt on the left to start the AI poet.</p>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};
+
+export default PoeticEngine;
+===============
+WelcomeScreen.tsx
+---------------
+import React, { useEffect, useState } from 'react';
+
+interface WelcomeScreenProps {
+  onEnter: () => void;
+}
+
+const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onEnter }) => {
+  const [timeLeft, setTimeLeft] = useState({ days: 0, hours: 0, minutes: 0, seconds: 0 });
+  const [isLocked, setIsLocked] = useState(true);
+
+  useEffect(() => {
+    const calculateTimeLeft = () => {
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      let targetDate = new Date(currentYear, 11, 17); // Dec 17 (Month is 0-indexed)
+
+      // If it IS Dec 17, we want to unlock.
+      if (now.getMonth() === 11 && now.getDate() === 17) {
+        setIsLocked(false);
+        return;
+      }
+
+      // If we are past the date, target next year
+      if (now > targetDate) {
+        targetDate = new Date(currentYear + 1, 11, 17);
+      }
+
+      const difference = targetDate.getTime() - now.getTime();
+
+      if (difference <= 0) {
+        setIsLocked(false);
+      } else {
+        setIsLocked(true);
+        setTimeLeft({
+          days: Math.floor(difference / (1000 * 60 * 60 * 24)),
+          hours: Math.floor((difference / (1000 * 60 * 60)) % 24),
+          minutes: Math.floor((difference / 1000 / 60) % 60),
+          seconds: Math.floor((difference / 1000) % 60),
+        });
+      }
+    };
+
+    const timer = setInterval(calculateTimeLeft, 1000);
+    calculateTimeLeft(); // Initial call
+
+    return () => clearInterval(timer);
+  }, []);
+
+  return (
+    <div className="fixed inset-0 z-50 bg-slate-950 flex flex-col items-center justify-center text-white px-4 text-center overflow-hidden">
+      
+      {/* 
+        DEV UNLOCK BUTTON
+        Uncomment the button below if you need to bypass the lock for testing.
+        To remove it completely, just delete this block.
+      
+      <button 
+        onClick={() => setIsLocked(false)} 
+        className="absolute top-4 right-4 text-xs text-white/10 hover:text-white/50 transition-colors uppercase tracking-widest z-50"
+      >
+        Dev Unlock
+      </button>
+      */}
+
+      {/* Ambient Background */}
+      <div className="absolute inset-0 z-0">
+        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-indigo-900/30 rounded-full blur-[120px] animate-pulse"></div>
+        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-pink-900/30 rounded-full blur-[120px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+      </div>
+
+      <div className="relative z-10 max-w-3xl mx-auto space-y-8">
+        <div className="animate-float">
+          <span className="text-6xl md:text-8xl filter drop-shadow-[0_0_20px_rgba(255,255,255,0.3)]">
+            {isLocked ? '🔒' : '🎂'}
+          </span>
+        </div>
+
+        <div className="space-y-4">
+          <p className="text-indigo-300 font-medium tracking-[0.3em] uppercase text-sm md:text-base animate-bounce-slow">
+            {isLocked ? "Countdown to Chaos" : "It's Time!"}
+          </p>
+          <h1 className="text-5xl md:text-7xl lg:text-8xl font-serif font-bold text-transparent bg-clip-text bg-gradient-to-b from-white via-slate-200 to-slate-400 leading-tight">
+            Dec 17th
+          </h1>
+        </div>
+
+        <div className="flex flex-col items-center gap-4">
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
+          <p className="text-lg md:text-xl text-slate-400 font-light">
+            Maheen &nbsp;|&nbsp; Masaid &nbsp;|&nbsp; Maaz
+          </p>
+          <div className="h-px w-24 bg-gradient-to-r from-transparent via-slate-500 to-transparent"></div>
+        </div>
+
+        {isLocked ? (
+          <div className="mt-12 p-8 rounded-2xl bg-white/5 border border-white/10 backdrop-blur-md">
+            <div className="grid grid-cols-4 gap-4 md:gap-8 text-center">
+              <TimeBox value={timeLeft.days} label="Days" />
+              <TimeBox value={timeLeft.hours} label="Hrs" />
+              <TimeBox value={timeLeft.minutes} label="Mins" />
+              <TimeBox value={timeLeft.seconds} label="Secs" />
+            </div>
+            <p className="mt-6 text-slate-400 text-sm">The digital gates open on December 17th</p>
+          </div>
+        ) : (
+          <button
+            onClick={onEnter}
+            className="mt-8 group relative inline-flex items-center justify-center px-10 py-4 font-serif text-xl font-bold text-white transition-all duration-300 bg-gradient-to-r from-indigo-600 to-purple-600 rounded-full overflow-hidden hover:scale-105 hover:shadow-[0_0_40px_rgba(79,70,229,0.4)] active:scale-95 focus:outline-none"
+          >
+            <span className="absolute w-0 h-0 transition-all duration-500 ease-out bg-white rounded-full group-hover:w-56 group-hover:h-56 opacity-10"></span>
+            <span className="relative flex items-center gap-3">
+              Enter Party Mode
+              <svg className="w-5 h-5 transform group-hover:translate-x-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M14 5l7 7m0 0l-7 7m7-7H3" />
+              </svg>
+            </span>
+          </button>
+        )}
+      </div>
+
+      {isLocked && (
+        <div className="absolute bottom-8 text-slate-600 text-xs tracking-widest uppercase">
+          Restricted Access: Come back later
+        </div>
+      )}
+    </div>
+  );
+};
+
+const TimeBox: React.FC<{ value: number; label: string }> = ({ value, label }) => (
+  <div className="flex flex-col items-center">
+    <div className="text-3xl md:text-5xl font-bold font-sans tabular-nums text-white">
+      {String(value).padStart(2, '0')}
+    </div>
+    <div className="text-[10px] md:text-xs uppercase tracking-wider text-indigo-300 mt-1">
+      {label}
+    </div>
+  </div>
+);
+
+export default WelcomeScreen;
+===============
+	node_modules
+=================
+
+
+	public
+===============
+vite.svg
+---------------
+
+
+=======================
+	services
+
+===============
+gemini.ts
+---------------
+import { GoogleGenAI } from "@google/genai";
+
+// Ensure API key is available
+const apiKey = process.env.API_KEY || '';
+const ai = new GoogleGenAI({ apiKey });
+
+const MODEL_NAME = 'gemini-2.5-flash';
+
+// Fallback content in case API fails or key is missing during the party
+const FALLBACK_POEM = `
+Upon the seventeenth of cold December,
+A triple birthday we shall remember!
+For Maheen, Masaid, and Maaz are here,
+To bring us joy and holiday cheer.
+The cake is sweet, the candles glow,
+For the coolest cousins that we know.
+Happy Birthday to the legendary crew,
+May all your wishes and dreams come true!
+(Note: AI is taking a nap, but the love is real!)
+`;
+
+const FALLBACK_FACTS = `
+*   **Wright Brothers Day:** On December 17, 1903, the Wright Brothers made their first successful flight!
+*   **The Simpsons:** The very first episode of The Simpsons aired on this day in 1989.
+*   **Saturnalia:** In ancient Rome, the festival of Saturnalia (the inspiration for many holiday traditions) began on Dec 17.
+`;
+
+/**
+ * Generates a personalized birthday poem based on user prompt.
+ */
+export const generateBirthdayPoem = async (userPrompt: string): Promise<string> => {
+  if (!apiKey) {
+    console.warn("API Key missing, using fallback poem.");
+    return FALLBACK_POEM;
+  }
+
+  try {
+    const finalPrompt = `
+      You are an expert poet for a birthday website.
+      The user wants you to write a poem based on the following request: "${userPrompt}".
+      
+      Context: The birthday celebration is for three cousins: Maheen, Masaid, and Maaz (born Dec 17).
+      If the user mentions specific names, follow their lead. If not, you can include Maheen, Masaid, and Maaz if it fits, or just follow the prompt generically.
+      Make it creative, rhythmically pleasing, and fun.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: MODEL_NAME,
+      contents: finalPrompt,
+    });
+
+    return response.text || FALLBACK_POEM;
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    return FALLBACK_POEM;
+  }
+};
+
+/**
+ * Generates fun facts about December 17th.
+ */
+export const getDayFacts = async (): Promise<string> => {
+  if (!apiKey) {
+    return FALLBACK_FACTS;
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL_NAME,
+      contents: "Give me 3 short, fascinating historical or pop-culture facts about December 17th. Format them as a bulleted list.",
+    });
+    return response.text || FALLBACK_FACTS;
+  } catch (error) {
+    console.error("Gemini API Error (Facts):", error);
+    return FALLBACK_FACTS;
+  }
+};
+
+
+=====================
+
+	src/assets
+===============
+react.svg
+---------------
+
+===============
+	utils
+===============
+ai-integration.ts
+---------------
+
+import { GoogleGenAI } from "@google/genai";
+
+// Ensure API key is available
+const apiKey = process.env.API_KEY || '';
+const ai = new GoogleGenAI({ apiKey });
+
+const MODEL_NAME = 'gemini-2.5-flash';
+
+// Fallback content in case API fails or key is missing during the party
+const FALLBACK_POEM = `
+Upon the seventeenth of cold December,
+A triple birthday we shall remember!
+For Maheen, Masaid, and Maaz are here,
+To bring us joy and holiday cheer.
+The cake is sweet, the candles glow,
+For the coolest cousins that we know.
+Happy Birthday to the legendary crew,
+May all your wishes and dreams come true!
+(Note: AI is taking a nap, but the love is real!)
+`;
+
+const FALLBACK_FACTS = `
+*   **Wright Brothers Day:** On December 17, 1903, the Wright Brothers made their first successful flight!
+*   **The Simpsons:** The very first episode of The Simpsons aired on this day in 1989.
+*   **Saturnalia:** In ancient Rome, the festival of Saturnalia (the inspiration for many holiday traditions) began on Dec 17.
+`;
+
+/**
+ * Generates a personalized birthday poem based on user prompt.
+ */
+export const generateBirthdayPoem = async (userPrompt: string): Promise<string> => {
+  if (!apiKey) {
+    console.warn("API Key missing, using fallback poem.");
+    return FALLBACK_POEM;
+  }
+
+  try {
+    const finalPrompt = `
+      You are an expert poet for a birthday website.
+      The user wants you to write a poem based on the following request: "${userPrompt}".
+      
+      Context: The birthday celebration is for three cousins: Maheen, Masaid, and Maaz (born Dec 17).
+      If the user mentions specific names, follow their lead. If not, you can include Maheen, Masaid, and Maaz if it fits, or just follow the prompt generically.
+      Make it creative, rhythmically pleasing, and fun.
+    `;
+
+    const response = await ai.models.generateContent({
+      model: MODEL_NAME,
+      contents: finalPrompt,
+    });
+
+    return response.text || FALLBACK_POEM;
+  } catch (error) {
+    console.error("Gemini API Error:", error);
+    return FALLBACK_POEM;
+  }
+};
+
+/**
+ * Generates fun facts about December 17th.
+ */
+export const getDayFacts = async (): Promise<string> => {
+  if (!apiKey) {
+    return FALLBACK_FACTS;
+  }
+
+  try {
+    const response = await ai.models.generateContent({
+      model: MODEL_NAME,
+      contents: "Give me 3 short, fascinating historical or pop-culture facts about December 17th. Format them as a bulleted list.",
+    });
+    return response.text || FALLBACK_FACTS;
+  } catch (error) {
+    console.error("Gemini API Error (Facts):", error);
+    return FALLBACK_FACTS;
+  }
+};
+
+===============
+	.env.local
+---------------
+API_KEY=AIzaSyBnKU3_doDt4jviS_oVSMbKCwpyer88lTM
+
+===============
+	.gitignore
+---------------
+# Logs
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+lerna-debug.log*
+
+node_modules
+dist
+dist-ssr
+*.local
+
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+.idea
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+===============
+	App.tsx
+---------------
+import React, { useState } from 'react';
+import Hero from './components/Hero';
+import AIWisher from './components/AIWisher';
+import Facts from './components/Facts';
+import Gallery from './components/Gallery';
+import Guestbook from './components/Guestbook';
+import WelcomeScreen from './components/WelcomeScreen';
+
+const App: React.FC = () => {
+  const [showWelcome, setShowWelcome] = useState(true);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  if (showWelcome) {
+    return <WelcomeScreen onEnter={() => setShowWelcome(false)} />;
+  }
+
+  return (
+    <main className="w-full min-h-screen animate-fade-in">
+      <Hero />
+      
+      <div className="relative z-20 -mt-10">
+        <div className="max-w-3xl mx-auto bg-white rounded-3xl shadow-xl p-8 md:p-12 text-center border-b-4 border-pink-500">
+          <h3 className="text-3xl font-bold text-slate-900 mb-6 font-serif">Happy Birthday, Legends! 👑</h3>
+          <div className="space-y-4 text-lg text-slate-600 leading-relaxed">
+            <p>
+              Welcome to your official digital headquarters. Since ordinary cards are boring, I built this entire site just for the three of you.
+            </p>
+            <p>
+              Explore the <strong>AI Poet</strong> (make it roast you if you dare), uncover cool history about your shared day, and see what the world has to say in the Guestbook.
+            </p>
+          </div>
+          <p className="mt-8 font-serif italic text-pink-600 text-2xl font-bold">
+            Here’s to another year of being absolutely awesome! 🚀
+          </p>
+        </div>
+      </div>
+
+      <Facts />
+      <Gallery />
+      <AIWisher />
+      <Guestbook />
+
+      <footer className="bg-slate-900 text-white pt-20 pb-10 relative overflow-hidden mt-0">
+          {/* Decorative top border gradient */}
+          <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-indigo-500 via-pink-500 to-indigo-500 opacity-70"></div>
+          
+          {/* Background glow */}
+          <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-full max-w-3xl h-64 bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none"></div>
+
+          <div className="max-w-4xl mx-auto px-4 text-center relative z-10">
+            
+            <div className="mb-10">
+              <h2 className="text-3xl font-serif font-bold mb-2 text-transparent bg-clip-text bg-gradient-to-r from-pink-300 via-purple-300 to-indigo-300 inline-block">
+                The December 17th Crew
+              </h2>
+              <p className="text-slate-400 text-sm tracking-[0.2em] uppercase">Legends Only</p>
+            </div>
+
+            <div className="flex flex-wrap justify-center gap-3 mb-12">
+               <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-pink-200">🎂 Maheen</span>
+               <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-purple-200">🎈 Masaid</span>
+               <span className="px-4 py-1.5 rounded-full bg-white/5 border border-white/10 text-sm text-indigo-200">🎁 Maaz</span>
+            </div>
+
+            <button 
+              onClick={scrollToTop}
+              className="inline-flex items-center gap-2 text-sm font-medium text-slate-400 hover:text-white transition-colors duration-300 mb-12 group"
+            >
+              <span className="uppercase tracking-widest text-xs">Back to Top</span>
+              <svg className="w-4 h-4 transform group-hover:-translate-y-1 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 10l7-7m0 0l7 7m-7-7v18" />
+              </svg>
+            </button>
+
+            <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-slate-500">
+              <p>&copy; {new Date().getFullYear()} Birthday Bash. All rights reserved.</p>
+              <p className="flex items-center gap-1">
+                Crafted with <span className="text-pink-500 animate-pulse">❤️</span> by Ahmer
+              </p>
+            </div>
+          </div>
+      </footer>
+    </main>
+  );
+};
+
+export default App;
+
+
+===============
+	eslint.config.js
+---------------
+import js from '@eslint/js'
+import globals from 'globals'
+import reactHooks from 'eslint-plugin-react-hooks'
+import reactRefresh from 'eslint-plugin-react-refresh'
+import tseslint from 'typescript-eslint'
+import { defineConfig, globalIgnores } from 'eslint/config'
+
+export default defineConfig([
+  globalIgnores(['dist']),
+  {
+    files: ['**/*.{ts,tsx}'],
+    extends: [
+      js.configs.recommended,
+      tseslint.configs.recommended,
+      reactHooks.configs.flat.recommended,
+      reactRefresh.configs.vite,
+    ],
+    languageOptions: {
+      ecmaVersion: 2020,
+      globals: globals.browser,
+    },
+  },
+])
+
+
+
+===============
+	index.html
+---------------
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Birthday!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Outfit', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'bounce-slow': 'bounce 3s infinite',
+              'fade-in': 'fadeIn 1s ease-out forwards',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0"
+  }
+}
+</script>
+</head>
+  <body class="bg-slate-50 text-slate-900 antialiased overflow-x-hidden">
+    <div id="root"></div>
+    <script type="module" src="/index.tsx"></script>
+  </body>
+</html>
+
+<!-- <!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Happy Birthday!</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Playfair+Display:ital,wght@0,600;1,600&display=swap" rel="stylesheet">
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Outfit', 'sans-serif'],
+              serif: ['Playfair Display', 'serif'],
+            },
+            animation: {
+              'float': 'float 6s ease-in-out infinite',
+              'bounce-slow': 'bounce 3s infinite',
+              'fade-in': 'fadeIn 1s ease-out forwards',
+            },
+            keyframes: {
+              float: {
+                '0%, 100%': { transform: 'translateY(0)' },
+                '50%': { transform: 'translateY(-20px)' },
+              },
+              fadeIn: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
+                '100%': { opacity: '1', transform: 'translateY(0)' },
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <style>
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 10px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #f1f1f1;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 5px;
+      }
+      ::-webkit-scrollbar-thumb:hover {
+        background: #555;
+      }
+    </style>
+  <script type="importmap">
+{
+  "imports": {
+    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
+    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
+    "react/": "https://aistudiocdn.com/react@^19.2.0/",
+    "react": "https://aistudiocdn.com/react@^19.2.0"
+  }
+}
+</script>
+<link rel="stylesheet" href="/index.css">
+</head>
+  <body class="bg-slate-50 text-slate-900 antialiased overflow-x-hidden">
+    <div id="root"></div>
+  <script type="module" src="/index.tsx"></script>
+</body>
+</html> -->
+
+===================
+index.tsx
+------------------
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+const rootElement = document.getElementById('root');
+if (!rootElement) {
+  throw new Error("Could not find root element to mount to");
+}
+
+const root = ReactDOM.createRoot(rootElement);
+root.render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+
+===============
+	metadata.json
+---------------
+{
+  "name": "Dec 17 Birthday Bash",
+  "description": "A personalized, interactive birthday celebration website for a cousin born on December 17th, featuring AI-generated poetry, trivia, and a photo gallery.",
+  "requestFramePermissions": []
+}
+===============
+	package-lock.json
+---------------
+
+===============
+	package.json
+---------------
+{
+  "name": "dec-17-birthday-bash",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "react-dom": "^19.2.0",
+    "@google/genai": "^1.30.0",
+    "react": "^19.2.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0"
+  }
+}
+
+
+===============
+	tsconfig.app.json
+	
+---------------
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.app.tsbuildinfo",
+    "target": "ES2022",
+    "useDefineForClassFields": true,
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ESNext",
+    "types": ["vite/client"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+    "jsx": "react-jsx",
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["src"]
+}
+
+===============
+	tsconfig.json
+---------------
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "experimentalDecorators": true,
+    "useDefineForClassFields": false,
+    "module": "ESNext",
+    "lib": [
+      "ES2022",
+      "DOM",
+      "DOM.Iterable"
+    ],
+    "skipLibCheck": true,
+    "types": [
+      "node"
+    ],
+    "moduleResolution": "bundler",
+    "isolatedModules": true,
+    "moduleDetection": "force",
+    "allowJs": true,
+    "jsx": "react-jsx",
+    "paths": {
+      "@/*": [
+        "./*"
+      ]
+    },
+    "allowImportingTsExtensions": true,
+    "noEmit": true
+  }
+}
+===============
+	tsconfig.node.json
+---------------
+{
+  "compilerOptions": {
+    "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
+    "target": "ES2023",
+    "lib": ["ES2023"],
+    "module": "ESNext",
+    "types": ["node"],
+    "skipLibCheck": true,
+
+    /* Bundler mode */
+    "moduleResolution": "bundler",
+    "allowImportingTsExtensions": true,
+    "verbatimModuleSyntax": true,
+    "moduleDetection": "force",
+    "noEmit": true,
+
+    /* Linting */
+    "strict": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "erasableSyntaxOnly": true,
+    "noFallthroughCasesInSwitch": true,
+    "noUncheckedSideEffectImports": true
+  },
+  "include": ["vite.config.ts"]
+}
+
+
+===============
+	types.ts
+---------------
+export interface TriviaQuestion {
+  question: string;
+  options: string[];
+  correctAnswer: number; // Index
+}
+
+export interface GeneratedContentState {
+  text: string;
+  loading: boolean;
+  error: string | null;
+}
+
+export enum Section {
+  HERO = 'hero',
+  WISHES = 'wishes',
+  TRIVIA = 'trivia',
+  GALLERY = 'gallery',
+}
+===============
+	vite.config.ts
+---------------
+
+import path from 'path';
+import { defineConfig, loadEnv } from 'vite';
+import react from '@vitejs/plugin-react';
+
+export default defineConfig(({ mode }) => {
+    const env = loadEnv(mode, '.', '');
+    return {
+      server: {
+        port: 3000,
+        host: '0.0.0.0',
+      },
+      plugins: [react()],
+      define: {
+        'process.env.API_KEY': JSON.stringify(env.GEMINI_API_KEY),
+        'process.env.GEMINI_API_KEY': JSON.stringify(env.GEMINI_API_KEY)
+      },
+      resolve: {
+        alias: {
+          '@': path.resolve(__dirname, '.'),
+        }
+      }
+    };
+});

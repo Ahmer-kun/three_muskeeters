@@ -64,6 +64,12 @@ const WelcomeScreen: React.FC<WelcomeScreenProps> = ({ onEnter }) => {
         Dev Unlock
       </button>
       */}
+      <button 
+        onClick={() => setIsLocked(false)} 
+        className="absolute top-4 right-4 text-xs text-white/10 hover:text-white/50 transition-colors uppercase tracking-widest z-50"
+      >
+        Dev Unlock
+      </button>
 
       {/* Ambient Background */}
       <div className="absolute inset-0 z-0">

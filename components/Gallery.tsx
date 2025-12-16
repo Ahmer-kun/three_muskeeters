@@ -4,11 +4,11 @@ const Gallery: React.FC = () => {
   // Using picsum with seeds to get consistent random images
   const images = [
     "https://i.postimg.cc/RFB3my21/9ec8b04121049fcddda23102577a25ff.jpg",
-    "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/AAAAAAA.jpg",
-    "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/DOJOCATTO.jpg",
-    "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/BooPBIDPOP.mp4",
-    "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/FreeFire%20CAT.jpg",
-    "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/IGRIS.jpg",
+    "https://i.postimg.cc/d1Y7Fpg4/AAAAAAA.jpg",
+    "https://i.postimg.cc/50VHJTD3/DOJOCATTO.jpg",
+    "https://i.postimg.cc/3RTyhVz9/dombol.jpg",
+    "https://i.postimg.cc/SshX43Hd/Free_Fire_CAT.jpg",
+    "https://i.postimg.cc/bJ9ZwLjL/IGRIS.jpg",
   ];
 
   return (

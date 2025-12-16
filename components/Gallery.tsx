@@ -3,7 +3,7 @@ import React from 'react';
 const Gallery: React.FC = () => {
   // Using picsum with seeds to get consistent random images
   const images = [
-    "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/9ec8b04121049fcddda23102577a25ff.jpg",
+    "https://i.postimg.cc/RFB3my21/9ec8b04121049fcddda23102577a25ff.jpg",
     "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/AAAAAAA.jpg",
     "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/DOJOCATTO.jpg",
     "https://github.com/Ahmer-kun/three_muskeeters/blob/main/pictures/BooPBIDPOP.mp4",

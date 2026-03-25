@@ -50,6 +50,7 @@ export const generateBirthdayPoem = async (userPrompt: string): Promise<string> 
   }
 };
 
+
 export const getDayFacts = async (): Promise<string> => {
   if (!apiKey) {
     return FALLBACK_FACTS;
